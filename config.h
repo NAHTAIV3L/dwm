@@ -118,7 +118,6 @@ static const char *bookmarktyp[]={ "/bin/sh", "-c", "bkmrkcli -p", NULL };
 static const char *unmounter[]  ={ "unmounter", NULL };
 static const char *mounter[]    ={ "mounter", NULL };
 static const char *startemacs[] ={ "emacsconnect", NULL };
-static const char *eeverywhere[]={ "/bin/sh", "-c", "doom +everywhere", NULL };
 static const char *rstartemacs[]={ "restartemacs", NULL };
 static const char *qutebrowser[]={ "qutebrowser", NULL };
 
@@ -187,7 +186,6 @@ static const Key keys[] = {
     { ShiftMask,                    XK_F8,     spawn,          {.v = unmounter } },
     { ShiftMask,                    XK_F9,     spawn,          {.v = mounter } },
     { MODKEY,                       XK_e,      spawn,          {.v = startemacs} },
-    { MODKEY|ShiftMask,             XK_e,      spawn,          {.v = eeverywhere} },
     { MODKEY,                       XK_r,      spawn,          {.v = rstartemacs} },
     TAGKEYS(                        XK_1,                      0)
     TAGKEYS(                        XK_2,                      1)
