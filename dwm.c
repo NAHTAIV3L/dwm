@@ -143,6 +143,7 @@ typedef struct {
     unsigned int tags;
     int isfloating;
     int monitor;
+    const char *cmdline;
 } Rule;
 
 /* function declarations */
@@ -283,6 +284,20 @@ static Window root, wmcheckwin;
 /* compile-time check if all tags fit into an unsigned int bit array. */
 struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
 
+    char*
+cmdfrompid(pid_t p)
+{
+    char* cmdline = malloc(1024 * sizeof(char));
+    snprintf(cmdline, 1024, "/proc/%d/cmdline", p);
+    FILE* fd = fopen(cmdline, "r");
+    size_t l = fread(cmdline, 1, 1024, fd);
+    for (int i = 0; i < l - 1; i++) {
+        if (cmdline[i] == 0x00)
+            cmdline[i] = ' ';
+    }
+    return cmdline;
+}
+
 /* function implementations */
     void
 applyrules(Client *c)
@@ -292,7 +307,19 @@ applyrules(Client *c)
     const Rule *r;
     Monitor *m;
     XClassHint ch = { NULL, NULL };
-
+    
+    Atom PID = XInternAtom(dpy, "_NET_WM_PID", False);
+    Atom actualtype;
+    long maxlength = 1024;
+    int format;
+    unsigned long nitems;
+    unsigned long bytesleft;
+    pid_t* pid = NULL;
+    XGetWindowProperty(dpy, c->win, PID,
+        0, maxlength, False, XA_CARDINAL, &actualtype,
+        &format, &nitems, &bytesleft, (unsigned char**)&pid);
+    char* cmdline = cmdfrompid(*pid);
+    
     /* rule matching */
     c->isfloating = 0;
     c->tags = 0;
@@ -304,7 +331,8 @@ applyrules(Client *c)
         r = &rules[i];
         if ((!r->title || strstr(c->name, r->title))
                 && (!r->class || strstr(class, r->class))
-                && (!r->instance || strstr(instance, r->instance)))
+                && (!r->instance || strstr(instance, r->instance))
+                && (!r->cmdline || strstr(cmdline, r->cmdline)))
         {
             c->isfloating = r->isfloating;
             c->tags |= r->tags;
@@ -313,6 +341,7 @@ applyrules(Client *c)
                 c->mon = m;
         }
     }
+    free(cmdline);
     if (ch.res_class)
         XFree(ch.res_class);
     if (ch.res_name)
