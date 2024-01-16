@@ -314,11 +314,13 @@ applyrules(Client *c)
     int format;
     unsigned long nitems;
     unsigned long bytesleft;
+    char* cmdline = NULL;
     pid_t* pid = NULL;
     XGetWindowProperty(dpy, c->win, PID,
         0, maxlength, False, XA_CARDINAL, &actualtype,
         &format, &nitems, &bytesleft, (unsigned char**)&pid);
-    char* cmdline = cmdfrompid(*pid);
+    if (pid)
+        cmdline = cmdfrompid(*pid);
     
     /* rule matching */
     c->isfloating = 0;
